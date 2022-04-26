@@ -15,16 +15,27 @@ class AdminController extends AbstractController
     public function login(ApiResponse $apiResponse, Request $request, AdministrateursRepository $administrateursRepository): Response
     {
         $params = [
-            "film_id" => "integer"
+            "email" => "string",
+            "password" => "string"
         ];
         $apiResponse->setParams($params);
         $response = $apiResponse->isParamsExistAndCorrectType($request);
         if ($apiResponse->hasError) {
             return $this->json($response, 400, ['Content-Type' => 'application/json']);
         }
-        $filmId = $response["film_id"];
-        $film = $administrateursRepository->getOneById($filmId);
-        return $this->json($film);
+        $email = $response["email"];
+        $password = $response["password"];
+        $user = $administrateursRepository->getCredentials($email, $password);
+
+        if(!empty($user)) {
+            return $this->json([
+                "Access" => "OK"
+            ]);
+        }
+
+        return $this->json([
+            "Access" => "DENIED"
+        ]);
     }
 
     #[Route('/admins', methods: ["GET"], name: 'app_login')]

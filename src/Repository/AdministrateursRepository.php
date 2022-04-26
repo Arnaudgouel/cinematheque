@@ -13,19 +13,17 @@ class AdministrateursRepository {
     $this->em = $em;
   }
 
-  public function getCredentials($email, $password) {
+  public function getCredentials($email) {
     $conn = $this->em->getConnection();
     $sql = '
-      SELECT admin.email, admin.nom, admin.prenom FROM administrateurs admin
+      SELECT admin.password FROM administrateurs admin
       WHERE admin.email = :email
-      AND admin.password = :password
     ';
     $stmt = $conn->prepare($sql);
     $resultSet = $stmt->executeQuery([
       'email' => $email,
-      'password' => $password
     ]);
-    return $resultSet->fetchAllAssociative();
+    return $resultSet->fetchOne();
   }
 
   public function getAll() {
@@ -66,28 +64,23 @@ class AdministrateursRepository {
       'prenom' => $prenom,
       'password' => $password
     ]);
-    return $resultSet->fetchAllAssociative();
+    return $resultSet->rowCount() >= 1;
   }
 
-  public function update($email, $nom, $prenom, $password, $emailOld, $nomOld, $prenomOld) {
+  public function update($nom, $prenom, $password, $email) :bool {
     $conn = $this->em->getConnection();
     $sql = '
       UPDATE administrateurs 
-      SET email = :email, nom = :nom, prenom = :prenom, password = :password
-      WHERE email = :emailOld
-      AND nom = :nomOld
-      AND prenom = :prenomOld
+      SET nom = :nom, prenom = :prenom, password = :password
+      WHERE email = :email
     ';
     $stmt = $conn->prepare($sql);
     $resultSet = $stmt->executeQuery([
-      'email' => $email,
       'nom' => $nom,
       'prenom' => $prenom,
       'password' => $password,
-      'emailOld' => $emailOld,
-      'nomOld' => $nomOld,
-      'prenomOld' => $prenomOld
+      'email' => $email
     ]);
-    return $resultSet->fetchAllAssociative();
+    return $resultSet->rowCount() >= 1;
   }
 }

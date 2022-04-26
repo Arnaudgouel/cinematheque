@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class AdminController extends AbstractController
 {
-    #[Route('/login', methods: ["GET"], name: 'app_login')]
+    #[Route('/login', methods: ["POST"], name: 'app_login')]
     public function login(ApiResponse $apiResponse, Request $request, AdministrateursRepository $administrateursRepository): Response
     {
         $params = [
@@ -19,15 +19,14 @@ class AdminController extends AbstractController
             "password" => "string"
         ];
         $apiResponse->setParams($params);
-        $response = $apiResponse->isParamsExistAndCorrectType($request);
+        $response = $apiResponse->isBodyExistAndCorrectType($request);
         if ($apiResponse->hasError) {
             return $this->json($response, 400, ['Content-Type' => 'application/json']);
         }
         $email = $response["email"];
         $password = $response["password"];
-        $user = $administrateursRepository->getCredentials($email, $password);
-
-        if(!empty($user)) {
+        $hash = $administrateursRepository->getCredentials($email);
+        if(password_verify($password, $hash)) {
             return $this->json([
                 "Access" => "OK"
             ]);
@@ -38,19 +37,71 @@ class AdminController extends AbstractController
         ]);
     }
 
-    #[Route('/admins', methods: ["GET"], name: 'app_login')]
-    public function getAll(ApiResponse $apiResponse, Request $request, AdministrateursRepository $administrateursRepository): Response
+    #[Route('/admins', methods: ["GET"], name: 'app_admins')]
+    public function getAll(AdministrateursRepository $administrateursRepository): Response
+    {
+        $admins = $administrateursRepository->getAll();
+        return $this->json($admins);
+    }
+
+    #[Route('/admins/index', methods: ["GET"], name: 'app_admin')]
+    public function getOne(ApiResponse $apiResponse, Request $request, AdministrateursRepository $administrateursRepository): Response
     {
         $params = [
-            "film_id" => "integer"
+            "email" => "string"
         ];
         $apiResponse->setParams($params);
         $response = $apiResponse->isParamsExistAndCorrectType($request);
         if ($apiResponse->hasError) {
             return $this->json($response, 400, ['Content-Type' => 'application/json']);
         }
-        $filmId = $response["film_id"];
-        $film = $administrateursRepository->getOneById($filmId);
-        return $this->json($film);
+        $email = $response["email"];
+        $admin = $administrateursRepository->getOne($email);
+        return $this->json($admin);
+    }
+
+    #[Route('/admins/index/update', methods: ["PUT"], name: 'app_admin_update')]
+    public function updateOne(ApiResponse $apiResponse, Request $request, AdministrateursRepository $administrateursRepository): Response
+    {
+        $params = [
+            "nom" => "string",
+            "prenom" => "string",
+            "password" => "string",
+            "email" => "string"
+        ];
+        $apiResponse->setParams($params);
+        $response = $apiResponse->isParamsExistAndCorrectType($request);
+        if ($apiResponse->hasError) {
+            return $this->json($response, 400, ['Content-Type' => 'application/json']);
+        }
+        $email = $response["email"];
+        $nom = $response["nom"];
+        $prenom = $response["prenom"];
+        $password = password_hash($response["password"], null);
+        $email = $response["email"];
+        $admin = $administrateursRepository->update($nom, $prenom, $password, $email);
+        return $this->json($admin);
+    }
+
+    #[Route('/admins/add', methods: ["POST"], name: 'app_admin_add')]
+    public function add(ApiResponse $apiResponse, Request $request, AdministrateursRepository $administrateursRepository): Response
+    {
+        $params = [
+            "email" => "string",
+            "nom" => "string",
+            "prenom" => "string",
+            "password" => "string",
+        ];
+        $apiResponse->setParams($params);
+        $response = $apiResponse->isBodyExistAndCorrectType($request);
+        if ($apiResponse->hasError) {
+            return $this->json($response, 400, ['Content-Type' => 'application/json']);
+        }
+        $email = $response["email"];
+        $nom = $response["nom"];
+        $prenom = $response["prenom"];
+        $password = password_hash($response["password"], null);
+        $admin = $administrateursRepository->add($email, $nom, $prenom, $password);
+        return $this->json($admin);
     }
 }

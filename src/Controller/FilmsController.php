@@ -54,6 +54,10 @@ class FilmsController extends AbstractController
     public function popular(FilmsRepository $filmsRepository): Response
     {
         $films = $filmsRepository->getPopular();
-        return $this->json($films);
+        return $this->json($films, 200, [
+            'Content-Type' => 'application/json',
+            "Access-Control-Allow-Origin" => "*",
+            "Access-Control-Allow-Methods" => "GET, POST, OPTIONS, PUT, DELETE"
+        ]);
     }
 }

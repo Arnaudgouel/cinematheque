@@ -60,7 +60,7 @@ class AdminController extends AbstractController
         return $this->json($admin);
     }
 
-    #[Route('/admins/index/update', methods: ["PUT"], name: 'app_admin_update')]
+    #[Route('/admins/index/update', methods: ["POST"], name: 'app_admin_update')]
     public function updateOne(ApiResponse $apiResponse, Request $request, AdministrateursRepository $administrateursRepository): Response
     {
         $params = [
@@ -70,7 +70,7 @@ class AdminController extends AbstractController
             "email" => "string"
         ];
         $apiResponse->setParams($params);
-        $response = $apiResponse->isParamsExistAndCorrectType($request);
+        $response = $apiResponse->isBodyExistAndCorrectType($request);
         if ($apiResponse->hasError) {
             return $this->json($response, 400, ['Content-Type' => 'application/json']);
         }
@@ -78,7 +78,6 @@ class AdminController extends AbstractController
         $nom = $response["nom"];
         $prenom = $response["prenom"];
         $password = password_hash($response["password"], null);
-        $email = $response["email"];
         $admin = $administrateursRepository->update($nom, $prenom, $password, $email);
         return $this->json($admin);
     }
@@ -102,6 +101,22 @@ class AdminController extends AbstractController
         $prenom = $response["prenom"];
         $password = password_hash($response["password"], null);
         $admin = $administrateursRepository->add($email, $nom, $prenom, $password);
+        return $this->json($admin);
+    }
+
+    #[Route('/admins/delete', methods: ["POST"], name: 'app_admin_delete')]
+    public function delete(ApiResponse $apiResponse, Request $request, AdministrateursRepository $administrateursRepository): Response
+    {
+        $params = [
+            "email" => "string",
+        ];
+        $apiResponse->setParams($params);
+        $response = $apiResponse->isBodyExistAndCorrectType($request);
+        if ($apiResponse->hasError) {
+            return $this->json($response, 400, ['Content-Type' => 'application/json']);
+        }
+        $email = $response["email"];
+        $admin = $administrateursRepository->delete($email);
         return $this->json($admin);
     }
 }

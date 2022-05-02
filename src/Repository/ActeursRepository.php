@@ -33,6 +33,20 @@ class ActeursRepository {
     $resultSet = $stmt->executeQuery([
       'acteurId' => $id
     ]);
+    return $resultSet->fetchAssociative();
+  }
+
+  public function getBySearchActeur($search) {
+    $conn = $this->em->getConnection();
+    $sql = "
+      SELECT a.* FROM acteurs a
+      WHERE UPPER(a.nom) LIKE UPPER(:search)
+      OR UPPER(a.prenom) LIKE UPPER(:search)
+    ";
+    $stmt = $conn->prepare($sql);
+    $resultSet = $stmt->executeQuery([
+      'search' => '%'.$search.'%'
+    ]);
     return $resultSet->fetchAllAssociative();
   }
 }

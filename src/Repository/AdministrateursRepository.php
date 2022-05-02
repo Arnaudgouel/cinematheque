@@ -46,7 +46,7 @@ class AdministrateursRepository {
     $resultSet = $stmt->executeQuery([
       'email' => $email
     ]);
-    return $resultSet->fetchAllAssociative();
+    return $resultSet->fetchAssociative();
   }
 
   public function add($email, $nom, $prenom, $password) {
@@ -79,6 +79,19 @@ class AdministrateursRepository {
       'nom' => $nom,
       'prenom' => $prenom,
       'password' => $password,
+      'email' => $email
+    ]);
+    return $resultSet->rowCount() >= 1;
+  }
+
+  public function delete($email) :bool {
+    $conn = $this->em->getConnection();
+    $sql = '
+      DELETE FROM administrateurs 
+      WHERE email = :email
+    ';
+    $stmt = $conn->prepare($sql);
+    $resultSet = $stmt->executeQuery([
       'email' => $email
     ]);
     return $resultSet->rowCount() >= 1;

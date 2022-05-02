@@ -55,7 +55,7 @@ class FilmsRepository {
     $resultSet = $stmt->executeQuery([
       'filmId' => $id
     ]);
-    return $resultSet->fetchAllAssociative();
+    return $resultSet->fetchAssociative();
   }
 
   public function getBySearch($search) {
@@ -67,6 +67,19 @@ class FilmsRepository {
         SELECT CONCAT(a.prenom, ' ', a.nom) FROM acteurs a
         WHERE UPPER(a.nom) LIKE UPPER(:search)
         OR UPPER(a.prenom) LIKE UPPER(:search)
+    ";
+    $stmt = $conn->prepare($sql);
+    $resultSet = $stmt->executeQuery([
+      'search' => '%'.$search.'%'
+    ]);
+    return $resultSet->fetchAllAssociative();
+  }
+
+  public function getBySearchFilm($search) {
+    $conn = $this->em->getConnection();
+    $sql = "
+        SELECT f.* FROM films f
+        WHERE UPPER(f.titre) LIKE UPPER(:search)
     ";
     $stmt = $conn->prepare($sql);
     $resultSet = $stmt->executeQuery([

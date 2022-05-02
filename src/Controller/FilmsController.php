@@ -34,7 +34,7 @@ class FilmsController extends AbstractController
         return $this->json($film);
     }
 
-    #[Route('/films-acteurs/recherche', methods: ["GET"], name: 'app_films_by_id')]
+    #[Route('/films/recherche', methods: ["GET"], name: 'app_films_acteur_recherche')]
     public function search(ApiResponse $apiResponse, Request $request, FilmsRepository $filmsRepository): Response
     {
         $params = [
@@ -46,7 +46,7 @@ class FilmsController extends AbstractController
             return $this->json($response, 400, ['Content-Type' => 'application/json']);
         }
         $search = $response["search"];
-        $result = $filmsRepository->getBySearch($search);
+        $result = $filmsRepository->getBySearchFilm($search);
         return $this->json($result);
     }
 

@@ -33,4 +33,20 @@ class ActeursController extends AbstractController
         $acteur = $acteursRepository->getOneById($acteurId);
         return $this->json($acteur);
     }
+
+    #[Route('/acteurs/recherche', methods: ["GET"], name: 'app_acteur_recherche')]
+    public function search(ApiResponse $apiResponse, Request $request, ActeursRepository $acteursRepository): Response
+    {
+        $params = [
+            "search" => "string"
+        ];
+        $apiResponse->setParams($params);
+        $response = $apiResponse->isParamsExistAndCorrectType($request);
+        if ($apiResponse->hasError) {
+            return $this->json($response, 400, ['Content-Type' => 'application/json']);
+        }
+        $search = $response["search"];
+        $result = $acteursRepository->getBySearchActeur($search);
+        return $this->json($result);
+    }
 }
